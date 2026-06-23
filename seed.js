@@ -1,0 +1,156 @@
+// seed.js
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+
+// Your Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCAq_Ipp6k42h5uH2DEUhxDNqLDACkXy-g",
+  authDomain: "music-app-4e066.firebaseapp.com",
+  projectId: "music-app-4e066",
+  storageBucket: "music-app-4e066.firebasestorage.app",
+  messagingSenderId: "867465137545",
+  appId: "1:867465137545:web:087826eeb56811ac63a558"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Mock songs data
+const initialSongs = [
+  {
+    songId: "mock-1",
+    title: "Midnight Drive",
+    artist: "Neon Skyline",
+    album: "Retrowave City",
+    coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    duration: 372,
+    plays: 15420
+  },
+  {
+    songId: "mock-2",
+    title: "Summer Breeze",
+    artist: "Acoustic Dreams",
+    album: "Sunkissed",
+    coverImage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    duration: 425,
+    plays: 98100
+  },
+  {
+    songId: "mock-3",
+    title: "Echoes of Silence",
+    artist: "Ether",
+    album: "Vast Emptiness",
+    coverImage: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    duration: 344,
+    plays: 43222
+  },
+  {
+    songId: "mock-4",
+    title: "Pulse Racer",
+    artist: "HyperDrive",
+    album: "Velocity",
+    coverImage: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    duration: 302,
+    plays: 87612
+  },
+  {
+    songId: "mock-5",
+    title: "Rainy Cafe",
+    artist: "Lo-Fi Lullabies",
+    album: "Cosy Afternoons",
+    coverImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    duration: 362,
+    plays: 245190
+  },
+  {
+    songId: "mock-6",
+    title: "Stardust",
+    artist: "Galaxy Voyager",
+    album: "Cosmic Odyssey",
+    coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
+    duration: 336,
+    plays: 67102
+  },
+  {
+    songId: "mock-7",
+    title: "Deep Cyber",
+    artist: "Tokyo Synth",
+    album: "Neon Grid",
+    coverImage: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
+    duration: 318,
+    plays: 32098
+  },
+  {
+    songId: "mock-8",
+    title: "Serenity Flow",
+    artist: "Zen Garden",
+    album: "Peaceful Mind",
+    coverImage: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&auto=format&fit=crop&q=60",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+    duration: 322,
+    plays: 19800
+  }
+];
+
+// Mock playlists data
+const initialPlaylists = [
+  {
+    playlistId: "featured-1",
+    title: "Chill Vibe Flow",
+    description: "Perfect blend of relaxing electronic and instrumental tunes.",
+    owner: "VibeFlow",
+    coverImage: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=60",
+    songs: ["mock-1", "mock-2", "mock-3"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    playlistId: "featured-2",
+    title: "Workout Boost",
+    description: "High energy tracks to power you through your workout.",
+    owner: "VibeFlow",
+    coverImage: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=60",
+    songs: ["mock-4", "mock-5", "mock-6"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    playlistId: "featured-3",
+    title: "Late Night Focus",
+    description: "Deep focus beats for code and study.",
+    owner: "VibeFlow",
+    coverImage: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=60",
+    songs: ["mock-7", "mock-8", "mock-1"],
+    createdAt: new Date().toISOString()
+  }
+];
+
+const seedDatabase = async () => {
+  console.log("Seeding Firebase Firestore with songs and playlists...");
+  
+  try {
+    // Seed Songs
+    for (const song of initialSongs) {
+      console.log(`Writing song: ${song.title}`);
+      await setDoc(doc(db, "songs", song.songId), song);
+    }
+    
+    // Seed Playlists
+    for (const playlist of initialPlaylists) {
+      console.log(`Writing playlist: ${playlist.title}`);
+      await setDoc(doc(db, "playlists", playlist.playlistId), playlist);
+    }
+    
+    console.log("Database seeded successfully! All default songs and playlists are now live in Firebase.");
+  } catch (err) {
+    console.error("Failed to seed database:", err);
+  }
+};
+
+seedDatabase();
