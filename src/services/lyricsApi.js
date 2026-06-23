@@ -1,5 +1,7 @@
 // src/services/lyricsApi.js
 
+const API_BASE_URL = import.meta.env.VITE_JIOSAAVN_API_URL || "http://localhost:5100";
+
 // Pre-defined mock lyrics to use if the API goes down or doesn't have the song
 const mockLyricsDatabase = {
   "neon skyline": {
@@ -29,29 +31,32 @@ const mockLyricsDatabase = {
 [00:48.00] Lost inside the acoustic haze
 [00:54.00] Nothing is as fine as this
 [01:00.00] Pure and natural summer bliss`
-  },
-  "lo-fi lullabies": {
-    "rainy cafe": `[00:05.00] (Instrumental Chill Beats)
-[00:30.00] Raindrops falling on the glass
-[00:45.00] Coffee warm and hours pass
-[01:00.00] Soft piano in the background plays
-[01:15.00] Cozy lo-fi rainy days...
-[01:30.00] (Instrumental Outro)`
   }
 };
 
-/**
- * Fetches lyrics for a given artist and song title.
- * Automatically falls back to high-fidelity mock lyrics if not found or if the API fails.
- */
 export const lyricsApi = {
-  async fetchLyrics(artist, title) {
+  async fetchLyrics(artist, title, songId = null) {
     const cleanArtist = artist.trim().toLowerCase();
     const cleanTitle = title.trim().toLowerCase();
 
     // Check if we have standard mock lyrics first
     if (mockLyricsDatabase[cleanArtist]?.[cleanTitle]) {
       return mockLyricsDatabase[cleanArtist][cleanTitle];
+    }
+
+    // Try fetching from local JioSaavn API if we have a valid JioSaavn song ID
+    if (songId && !songId.startsWith("mock-")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/lyrics/?query=${songId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status && data.lyrics) {
+            return formatJioSaavnLyrics(data.lyrics, artist, title);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch lyrics from JioSaavn, trying fallback APIs.");
+      }
     }
 
     try {
@@ -72,6 +77,28 @@ export const lyricsApi = {
       return generateDynamicMockLyrics(artist, title);
     }
   }
+};
+
+// Formats JioSaavn lyrics payload (replaces HTML break tags, splits lines)
+const formatJioSaavnLyrics = (rawLyrics, artist, title) => {
+  const formatted = rawLyrics
+    .replace(/<br>/g, "\n")
+    .replace(/<br \/>/g, "\n")
+    .replace(/&quot;/g, '"');
+  
+  // JioSaavn lyrics don't have timetables, let's assign simulated timings for sync scrolling!
+  const lines = formatted.split("\n").filter(Boolean);
+  const result = [];
+  lines.forEach((line, index) => {
+    // Distribute timings roughly throughout a standard song length (e.g. 10s intervals)
+    const time = index * 5.5 + 4;
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    const timeStr = `[${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""}${seconds}.00]`;
+    result.push(`${timeStr} ${line.trim()}`);
+  });
+
+  return result.join("\n");
 };
 
 // Generates beautiful placeholders if lyrics are unavailable

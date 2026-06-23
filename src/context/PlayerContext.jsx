@@ -81,7 +81,7 @@ export const PlayerProvider = ({ children }) => {
       dbService.addToRecentlyPlayed(currentSong);
 
       // Fetch lyrics
-      fetchSongLyrics(currentSong.artist, currentSong.title);
+      fetchSongLyrics(currentSong.artist, currentSong.title, currentSong.songId);
     } else {
       setIsPlaying(false);
     }
@@ -116,11 +116,11 @@ export const PlayerProvider = ({ children }) => {
   };
 
   // Fetch lyrics from lyrics API
-  const fetchSongLyrics = async (artist, title) => {
+  const fetchSongLyrics = async (artist, title, songId = null) => {
     setLoadingLyrics(true);
     setLyrics("");
     try {
-      const text = await lyricsApi.fetchLyrics(artist, title);
+      const text = await lyricsApi.fetchLyrics(artist, title, songId);
       setLyrics(text);
     } catch (err) {
       setLyrics("Lyrics unavailable for this song.");
